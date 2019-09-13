@@ -15,10 +15,12 @@ import { Attribute } from '../database/models';
 class AttributeController {
   /**
    * This method get all attributes
+   *
+   * @static
    * @param {object} req express request object
    * @param {object} res express response object
    * @param {function} next next middleware
-   * @returns {json} json object with status and attributes list
+   * @returns {json} json object with attributes list
    * @memberof AttributeController
    */
   static async getAllAttributes(req, res, next) {
@@ -32,13 +34,30 @@ class AttributeController {
 
   /**
    * This method gets a single attribute using the attribute id
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with single attribute
+   * @memberof AttributeController
    */
   static async getSingleAttribute(req, res, next) {
-    // Write code to get a single attribute using the attribute id provided in the request param
-    return res.status(200).json({ message: 'this works' });
+    const { attribute_id: attributeId } = req.params;
+    try {
+      const attribute = await Attribute.findByPk(attributeId);
+      if (attribute) {
+        return res.status(200).json(attribute);
+      }
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Attribute with id ${attributeId} does not exist`,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
