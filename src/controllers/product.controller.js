@@ -235,13 +235,19 @@ class ProductController {
 
   /**
    * This method should get all categories
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with status and category list
+   * @memberof ProductController
    */
   static async getAllCategories(req, res, next) {
-    // Implement code to get all categories here
-    return res.status(200).json({ message: 'this works' });
+    try {
+      const categories = await Category.findAll();
+      return res.status(200).json({ rows: categories, status: true });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
