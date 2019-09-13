@@ -24,6 +24,7 @@ import {
   Attribute,
   Category,
   Sequelize,
+  sequelize,
 } from '../database/models';
 
 const { Op } = Sequelize;
@@ -40,22 +41,49 @@ class ProductController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and product data
+   * @param {function} next next middleware
+   * @returns {json} json object with status, paginationMeta and product data
    * @memberof ProductController
    */
   static async getAllProducts(req, res, next) {
     const { query } = req;
-    const { page, limit, offset } = query;
+    const { page = 1, limit = 20, description_length: descriptionLength } = query;
+
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(page) || isNaN(limit) || isNaN(descriptionLength)) {
+      return res.status(400).json({
+        err: 'Query parameters should be valid integer values',
+        status: false,
+      });
+    }
     const sqlQueryMap = {
-      limit,
-      offset,
+      limit: parseInt(limit, 10),
+      offset: (page - 1) * limit,
+      attributes: [
+        'product_id',
+        'name',
+        'price',
+        'thumbnail',
+        'discounted_price',
+        'description',
+        sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength}) as description`),
+      ],
     };
     try {
       const products = await Product.findAndCountAll(sqlQueryMap);
+      const { rows, count } = products;
+
+      const paginationMeta = {
+        currentPage: parseInt(page, 10),
+        currentPageSize: parseInt(limit, 10),
+        totalPages: Math.ceil(count / limit),
+        totalRecords: count,
+      };
+
       return res.status(200).json({
+        paginationMeta,
+        rows,
         status: true,
-        products,
       });
     } catch (error) {
       return next(error);
