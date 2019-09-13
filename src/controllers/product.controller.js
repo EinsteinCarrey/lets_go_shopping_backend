@@ -159,32 +159,34 @@ class ProductController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and product details
+   * @param {function} next next middleware
+   * @returns {json} json object with a single products details
    * @memberof ProductController
    */
   static async getProduct(req, res, next) {
-    const { product_id } = req.params;  // eslint-disable-line
+    const {
+      query: { description_length: descriptionLength },
+      params: { product_id: productId },
+    } = req;
+
+    const sqlQueryMap = {
+      attributes: [
+        'product_id',
+        'name',
+        'price',
+        'thumbnail',
+        'image',
+        'display',
+        'image_2',
+        'discounted_price',
+        'description',
+        sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength || 200}) as description`),
+      ],
+    };
+
     try {
-      const product = await Product.findByPk(product_id, {
-        include: [
-          {
-            model: AttributeValue,
-            as: 'attributes',
-            attributes: ['value'],
-            through: {
-              attributes: [],
-            },
-            include: [
-              {
-                model: Attribute,
-                as: 'attribute_type',
-              },
-            ],
-          },
-        ],
-      });
-      return res.status(500).json({ message: 'This works!!1' });
+      const product = await Product.findByPk(productId, sqlQueryMap);
+      return res.status(200).json(product);
     } catch (error) {
       return next(error);
     }
