@@ -29,13 +29,30 @@ class TaxController {
 
   /**
    * This method gets a single tax using the tax id
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with a details of a single tax
+   * @memberof TaxController
    */
   static async getSingleTax(req, res, next) {
-    // Write code to get a single tax using the tax Id provided in the request param
-    return res.status(200).json({ message: 'this works' });
+    const { tax_id: taxId } = req.params;
+    try {
+      const tax = await Tax.findByPk(taxId);
+      if (tax) {
+        return res.status(200).json(tax);
+      }
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Tax with id ${taxId} does not exist`,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 
