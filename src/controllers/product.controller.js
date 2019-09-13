@@ -169,6 +169,13 @@ class ProductController {
       params: { product_id: productId },
     } = req;
 
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(descriptionLength)) {
+      return res.status(400).json({
+        err: 'description_length should be valid integer values',
+        status: false,
+      });
+    }
     const sqlQueryMap = {
       attributes: [
         'product_id',
@@ -186,7 +193,17 @@ class ProductController {
 
     try {
       const product = await Product.findByPk(productId, sqlQueryMap);
-      return res.status(200).json(product);
+
+      if (product) {
+        return res.status(200).json(product);
+      }
+
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Product with id ${productId} does not exist`,
+        },
+      });
     } catch (error) {
       return next(error);
     }
@@ -227,7 +244,7 @@ class ProductController {
       return res.status(404).json({
         error: {
           status: 404,
-          message: `Department with id ${departmentId} does not exist`,  // eslint-disable-line
+          message: `Department with id ${departmentId} does not exist`,
         },
       });
     } catch (error) {
