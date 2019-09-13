@@ -1,3 +1,5 @@
+import { Attribute } from '../database/models';
+
 /**
  * The controller defined below is the attribute controller, highlighted below are the functions of each static method
  * in the controller
@@ -13,13 +15,19 @@
 class AttributeController {
   /**
    * This method get all attributes
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with status and attributes list
+   * @memberof AttributeController
    */
   static async getAllAttributes(req, res, next) {
-    // write code to get all attributes from the database here
-    return res.status(200).json({ message: 'this works' });
+    try {
+      const attributes = await Attribute.findAll();
+      return res.status(200).json(attributes);
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
