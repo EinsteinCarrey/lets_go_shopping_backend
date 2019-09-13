@@ -235,6 +235,8 @@ class ProductController {
 
   /**
    * This method should get all categories
+   *
+   * @static
    * @param {object} req express request object
    * @param {object} res express response object
    * @param {function} next next middleware
@@ -252,6 +254,8 @@ class ProductController {
 
   /**
    * This method should get a single category using the categoryId
+   *
+   * @static
    * @param {object} req express request object
    * @param {object} res express response object
    * @param {function} next next middleware
