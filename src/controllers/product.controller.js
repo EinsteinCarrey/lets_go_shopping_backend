@@ -216,16 +216,16 @@ class ProductController {
    * @param {*} next
    */
   static async getDepartment(req, res, next) {
-    const { department_id } = req.params; // eslint-disable-line
+    const { department_id: departmentId } = req.params;
     try {
-      const department = await Department.findByPk(department_id);
+      const department = await Department.findByPk(departmentId);
       if (department) {
         return res.status(200).json(department);
       }
       return res.status(404).json({
         error: {
           status: 404,
-          message: `Department with id ${department_id} does not exist`,  // eslint-disable-line
+          message: `Department with id ${departmentId} does not exist`,  // eslint-disable-line
         },
       });
     } catch (error) {
@@ -252,14 +252,28 @@ class ProductController {
 
   /**
    * This method should get a single category using the categoryId
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with single category
+   * @memberof ProductController
    */
   static async getSingleCategory(req, res, next) {
-    const { category_id } = req.params;  // eslint-disable-line
-    // implement code to get a single category here
-    return res.status(200).json({ message: 'this works' });
+    const { category_id: categoryId } = req.params;
+    try {
+      const category = await Category.findByPk(categoryId);
+      if (category) {
+        return res.status(200).json(category);
+      }
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Category with id ${categoryId} does not exist`,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
