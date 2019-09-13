@@ -168,7 +168,7 @@ class ProductController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
+   * @param {function} next next middleware
    * @returns {json} json object with status and department list
    * @memberof ProductController
    */
