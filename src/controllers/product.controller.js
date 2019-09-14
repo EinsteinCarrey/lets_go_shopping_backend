@@ -51,7 +51,10 @@ class ProductController {
    */
   static async getAllProducts(req, res, next) {
     const { query } = req;
-    const { page = 1, limit = 20, description_length: descriptionLength } = query;
+    const { description_length: descriptionLength } = query;
+    let { page, limit } = query;
+    limit = limit || 20;
+    page = page || 1;
 
     // eslint-disable-next-line no-restricted-globals
     if (isNaN(page) || isNaN(limit) || isNaN(descriptionLength)) {
@@ -102,10 +105,47 @@ class ProductController {
    * @memberof ProductController
    */
   static async searchProduct(req, res, next) {
-    const { query_string, all_words } = req.query;  // eslint-disable-line
-    // all_words should either be on or off
-    // implement code to search product
-    return res.status(200).json({ message: 'this works' });
+    const { query } = req;
+    const {
+      query_string: queryString,
+      all_words: allWords,
+      description_length: descriptionLength = 200,
+    } = query;
+
+    // noinspection DuplicatedCode
+    let { page, limit } = query;
+    limit = limit || 20;
+    page = page || 1;
+
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(page) || isNaN(limit) || isNaN(descriptionLength)) {
+      return res.status(400).json({
+        err: 'Query parameters should be valid integer values',
+        status: false,
+      });
+    }
+    const sqlQueryMap = Object.assign({}, productsQueryMap);
+    const { attributes } = sqlQueryMap;
+
+    // substring description at number of characters defined by `descriptionLength`
+    sqlQueryMap.attributes = attributes.concat([
+      sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength || 200}) as description`),
+    ]);
+
+    const searchParam =
+      allWords === 'on' ? { [Op.eq]: `${queryString}` } : { [Op.substring]: `${queryString}` };
+
+    sqlQueryMap.where = { name: searchParam };
+    sqlQueryMap.limit = parseInt(limit, 10);
+    sqlQueryMap.offset = (page - 1) * limit;
+
+    try {
+      const product = await Product.findAll(sqlQueryMap);
+
+      return res.status(200).json(product);
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
