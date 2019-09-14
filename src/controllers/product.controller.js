@@ -29,6 +29,10 @@ import {
 
 const { Op } = Sequelize;
 
+const productsQueryMap = {
+  attributes: ['product_id', 'name', 'price', 'thumbnail', 'discounted_price', 'description'],
+};
+
 /**
  *
  *
@@ -56,19 +60,16 @@ class ProductController {
         status: false,
       });
     }
-    const sqlQueryMap = {
-      limit: parseInt(limit, 10),
-      offset: (page - 1) * limit,
-      attributes: [
-        'product_id',
-        'name',
-        'price',
-        'thumbnail',
-        'discounted_price',
-        'description',
-        sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength}) as description`),
-      ],
-    };
+
+    const sqlQueryMap = Object.assign({}, productsQueryMap);
+
+    sqlQueryMap.limit = parseInt(limit, 10);
+    sqlQueryMap.offset = (page - 1) * limit;
+    sqlQueryMap.attributes.push(
+      // substring description at number of characters defined by `descriptionLength`
+      sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength}) as description`)
+    );
+
     try {
       const products = await Product.findAndCountAll(sqlQueryMap);
       const { rows, count } = products;
@@ -176,20 +177,17 @@ class ProductController {
         status: false,
       });
     }
-    const sqlQueryMap = {
-      attributes: [
-        'product_id',
-        'name',
-        'price',
-        'thumbnail',
-        'image',
-        'display',
-        'image_2',
-        'discounted_price',
-        'description',
-        sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength || 200}) as description`),
-      ],
-    };
+
+    const sqlQueryMap = Object.assign({}, productsQueryMap);
+    const { attributes } = sqlQueryMap;
+
+    sqlQueryMap.attributes = attributes.concat([
+      'image',
+      'display',
+      'image_2',
+      // substring description at number of characters defined by `descriptionLength`
+      sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength || 200}) as description`),
+    ]);
 
     try {
       const product = await Product.findByPk(productId, sqlQueryMap);
