@@ -1,4 +1,4 @@
-import { Attribute } from '../database/models';
+import { Attribute, AttributeValue } from '../database/models';
 
 /**
  * The controller defined below is the attribute controller, highlighted below are the functions of each static method
@@ -62,14 +62,40 @@ class AttributeController {
 
   /**
    * This method gets a list attribute values in an attribute using the attribute id
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with a single attributes values
+   * @memberof AttributeController
    */
   static async getAttributeValues(req, res, next) {
-    // Write code to get all attribute values for an attribute using the attribute id provided in the request param
-    // This function takes the param: attribute_id
-    return res.status(200).json({ message: 'this works' });
+    const { attribute_id: attributeId } = req.params;
+    try {
+      const attributeValues = await Attribute.findByPk(attributeId, {
+        include: [
+          {
+            model: AttributeValue,
+            attributes: ['value', 'attribute_value_id'],
+          },
+        ],
+      });
+
+      if (attributeValues) {
+        const { AttributeValues } = attributeValues;
+        return res.status(200).json(AttributeValues);
+      }
+
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Attribute with id ${attributeId} does not exist`,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**

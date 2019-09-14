@@ -100,8 +100,8 @@ class ProductController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and product data
+   * @param {function} next next middleware
+   * @returns {json} json object with product data
    * @memberof ProductController
    */
   static async searchProduct(req, res, next) {
