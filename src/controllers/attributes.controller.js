@@ -1,3 +1,5 @@
+import { Attribute } from '../database/models';
+
 /**
  * The controller defined below is the attribute controller, highlighted below are the functions of each static method
  * in the controller
@@ -13,24 +15,49 @@
 class AttributeController {
   /**
    * This method get all attributes
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with attributes list
+   * @memberof AttributeController
    */
   static async getAllAttributes(req, res, next) {
-    // write code to get all attributes from the database here
-    return res.status(200).json({ message: 'this works' });
+    try {
+      const attributes = await Attribute.findAll();
+      return res.status(200).json(attributes);
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
    * This method gets a single attribute using the attribute id
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with single attribute
+   * @memberof AttributeController
    */
   static async getSingleAttribute(req, res, next) {
-    // Write code to get a single attribute using the attribute id provided in the request param
-    return res.status(200).json({ message: 'this works' });
+    const { attribute_id: attributeId } = req.params;
+    try {
+      const attribute = await Attribute.findByPk(attributeId);
+      if (attribute) {
+        return res.status(200).json(attribute);
+      }
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Attribute with id ${attributeId} does not exist`,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
