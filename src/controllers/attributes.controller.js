@@ -1,4 +1,4 @@
-import { Attribute, AttributeValue } from '../database/models';
+import { Attribute, AttributeValue, ProductAttribute } from '../database/models';
 
 /**
  * The controller defined below is the attribute controller, highlighted below are the functions of each static method
@@ -100,13 +100,56 @@ class AttributeController {
 
   /**
    * This method gets a list attribute values in a product using the product id
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with a list of attributes for a single product
+   * @memberof AttributeController
    */
   static async getProductAttributes(req, res, next) {
-    // Write code to get all attribute values for a product using the product id provided in the request param
-    return res.status(200).json({ message: 'this works' });
+    const { product_id: productId } = req.params;
+    try {
+      const productAttributes = await ProductAttribute.findAll({
+        where: {
+          product_id: productId,
+        },
+        include: [
+          {
+            model: AttributeValue,
+            attributes: ['value'],
+            include: [
+              {
+                model: Attribute,
+                attributes: ['name'],
+                as: 'attribute_type',
+              },
+            ],
+          },
+        ],
+        attributes: ['attribute_value_id'],
+      });
+
+      const attInProducts = productAttributes.map(x => {
+        const {
+          attribute_value_id, // eslint-disable-line camelcase
+          AttributeValue: {
+            value,
+            attribute_type: { name },
+          },
+        } = x;
+        return {
+          attribute_value_id,
+          attribute_value: value,
+          attribute_name: name,
+        };
+      });
+
+      return res.status(200).json(attInProducts);
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 

@@ -206,7 +206,7 @@ class ProductController {
    */
   static async getProduct(req, res, next) {
     const {
-      query: { description_length: descriptionLength },
+      query: { description_length: descriptionLength = 200 },
       params: { product_id: productId },
     } = req;
 
@@ -226,7 +226,7 @@ class ProductController {
       'display',
       'image_2',
       // substring description at number of characters defined by `descriptionLength`
-      sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength || 200}) as description`),
+      sequelize.literal(`SUBSTRING(description, 1, ${descriptionLength}) as description`),
     ]);
 
     try {
