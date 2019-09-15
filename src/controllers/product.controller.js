@@ -19,9 +19,8 @@
  */
 import {
   Product,
+  ProductCategory,
   Department,
-  AttributeValue,
-  Attribute,
   Category,
   Sequelize,
   sequelize,
@@ -154,27 +153,46 @@ class ProductController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and product data
+   * @param {function} next next middleware
+   * @returns {json} json object with products listed by category
    * @memberof ProductController
    */
   static async getProductsByCategory(req, res, next) {
     try {
       const { category_id } = req.params; // eslint-disable-line
-      const products = await Product.findAndCountAll({
+      const { description_length: descriptionLength, page, limit } = req.query;
+
+      // eslint-disable-next-line no-restricted-globals
+      if (isNaN(page) || isNaN(limit) || isNaN(descriptionLength)) {
+        return res.status(400).json({
+          err: 'Query parameters should be valid integer values',
+          status: false,
+        });
+      }
+
+      const offset = ((page || 1) - 1) * (limit || 20);
+      const queryMap = {
+        limit: limit ? parseInt(limit, 10) : 20,
+        offset: parseInt(offset, 10),
+        where: { category_id },
         include: [
           {
-            model: Department,
-            where: {
-              category_id,
-            },
-            attributes: [],
+            model: Product,
+            as: 'product',
+            attributes: [
+              ...productsQueryMap.attributes,
+              // substring description at number of characters defined by `descriptionLength`
+              sequelize.literal(
+                `SUBSTRING(description, 1, ${descriptionLength || 200}) as description`
+              ),
+            ],
           },
         ],
-        limit,
-        offset,
-      });
-      return next(products);
+      };
+
+      const products = await ProductCategory.findAll(queryMap);
+      const rows = products.map(x => x.product);
+      return res.status(200).json({ rows });
     } catch (error) {
       return next(error);
     }
