@@ -1,26 +1,6 @@
-/**
- * Check each method in the shopping cart controller and add code to implement
- * the functionality or fix any bug.
- * The static methods and their function include:
- *
- * - generateUniqueCart - To generate a unique cart id
- * - addItemToCart - To add new product to the cart
- * - getCart - method to get list of items in a cart
- * - updateCartItem - Update the quantity of a product in the shopping cart
- * - emptyCart - should be able to clear shopping cart
- * - removeItemFromCart - should delete a product from the shopping cart
- * - createOrder - Create an order
- * - getCustomerOrders - get all orders of a customer
- * - getOrderSummary - get the details of an order
- * - processStripePayment - process stripe payment
- *
- *  NB: Check the BACKEND CHALLENGE TEMPLATE DOCUMENTATION in the readme of this repository to see our recommended
- *  endpoints, request body/param, and response object for each of these method
- */
+import { OrderDetail } from '../database/models';
 
 /**
- *
- *
  * @class shoppingCartController
  */
 class ShoppingCartController {
@@ -76,7 +56,7 @@ class ShoppingCartController {
    * @memberof ShoppingCartController
    */
   static async updateCartItem(req, res, next) {
-    const { item_id } = req.params // eslint-disable-line
+    const { item_id } = req.params; // eslint-disable-line
     return res.status(200).json({ message: 'this works' });
   }
 
@@ -148,19 +128,28 @@ class ShoppingCartController {
   }
 
   /**
-   *
+   * returns a single order with list of order items
    *
    * @static
    * @param {obj} req express request object
    * @param {obj} res express response object
-   * @returns {json} returns json response with order summary
+   * @param {function} next express response object
+   * @returns {json} returns json response with order details
    * @memberof ShoppingCartController
    */
   static async getOrderSummary(req, res, next) {
-    const { order_id } = req.params;  // eslint-disable-line
-    const { customer_id } = req;   // eslint-disable-line
+    const { order_id } = req.params; // eslint-disable-line camelcase
+    const queryMap = {
+      where: { order_id },
+      attributes: ['product_id', 'attributes', 'product_name', 'quantity', 'unit_cost'],
+    };
     try {
-      // write code to get order summary
+      const orderDetails = await OrderDetail.findAll(queryMap);
+      const orderItems = orderDetails.map(({ dataValues: x }) => ({
+        ...x,
+        subtotal: x.quantity * x.unit_cost,
+      }));
+      return res.status(200).json({ order_id, orderItems });
     } catch (error) {
       return next(error);
     }
@@ -174,7 +163,7 @@ class ShoppingCartController {
    */
   static async processStripePayment(req, res, next) {
     const { email, stripeToken, order_id } = req.body; // eslint-disable-line
-    const { customer_id } = req;  // eslint-disable-line
+    const { customer_id } = req; // eslint-disable-line
     try {
       // implement code to process payment and send order confirmation email here
     } catch (error) {
