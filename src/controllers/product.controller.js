@@ -204,8 +204,8 @@ class ProductController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and product data
+   * @param {function} next next middleware
+   * @returns {json} json object with list of product filtered by department
    * @memberof ProductController
    */
   static async getProductsByDepartment(req, res, next) {
@@ -363,7 +363,7 @@ class ProductController {
   static async getAllCategories(req, res, next) {
     try {
       const categories = await Category.findAll();
-      return res.status(200).json({ rows: categories, status: true });
+      return res.status(200).json({ rows: categories });
     } catch (error) {
       return next(error);
     }
@@ -399,11 +399,35 @@ class ProductController {
 
   /**
    * This method should get list of categories in a department
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with list of categories filtered by department_id
+   * @memberof ProductController
+   */
+  static async getDepartmentCategories(req, res, next) {
+    const queryMap = {
+      where: {
+        department_id: req.params.department_id,
+      },
+    };
+    try {
+      const categories = await Category.findAll(queryMap);
+      return res.status(200).json({ rows: categories });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * This method should get list of categories in a department
    * @param {*} req
    * @param {*} res
    * @param {*} next
    */
-  static async getDepartmentCategories(req, res, next) {
+  static async getProductCategories(req, res, next) {
     const { department_id } = req.params;  // eslint-disable-line
     // implement code to get categories in a department here
     return res.status(200).json({ message: 'this works' });
