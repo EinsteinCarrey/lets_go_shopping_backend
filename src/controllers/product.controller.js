@@ -1,27 +1,9 @@
-/**
- * The Product controller contains all static methods that handles product request
- * Some methods work fine, some needs to be implemented from scratch while others may contain one or two bugs
- * The static methods and their function include:
- *
- * - getAllProducts - Return a paginated list of products
- * - searchProducts - Returns a list of product that matches the search query string
- * - getProductsByCategory - Returns all products in a product category
- * - getProductsByDepartment - Returns a list of products in a particular department
- * - getProduct - Returns a single product with a matched id in the request params
- * - getAllDepartments - Returns a list of all product departments
- * - getDepartment - Returns a single department
- * - getAllCategories - Returns all categories
- * - getSingleCategory - Returns a single category
- * - getDepartmentCategories - Returns all categories in a department
- *
- *  NB: Check the BACKEND CHALLENGE TEMPLATE DOCUMENTATION in the readme of this repository to see our recommended
- *  endpoints, request body/param, and response object for each of these method
- */
 import {
   Product,
   ProductCategory,
   Department,
   Category,
+  Review,
   Sequelize,
   sequelize,
 } from '../database/models';
@@ -457,6 +439,40 @@ class ProductController {
           message: `Category not found`,
         },
       });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * This method should get the reviews of a product
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with reviews of a product
+   * @memberof ProductController
+   */
+  static async getProductReviews(req, res, next) {
+    const { product_id } = req.params; // eslint-disable-line camelcase
+    try {
+      const queryMap = {
+        where: { product_id },
+        attributes: ['created_on', 'review', 'rating'],
+        include: [
+          {
+            model: Product,
+            attributes: ['name'],
+          },
+        ],
+      };
+      const reviews = await Review.findAll(queryMap);
+      const productReviews = reviews.map(({ dataValues: { Product: product, ...x } }) => ({
+        ...x,
+        name: product.name,
+      }));
+      return res.status(200).json(productReviews);
     } catch (error) {
       return next(error);
     }

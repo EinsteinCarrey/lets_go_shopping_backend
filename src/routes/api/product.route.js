@@ -7,6 +7,7 @@ const router = Router();
 router.get('/products', ProductController.getAllProducts);
 router.get('/products/search', ProductController.searchProduct);
 router.get('/products/:product_id', ProductController.getProduct);
+router.get('/products/:product_id/reviews', ProductController.getProductReviews);
 router.get('/products/inCategory/:category_id', ProductController.getProductsByCategory);
 router.get('/products/inDepartment/:department_id', ProductController.getProductsByDepartment);
 router.get('/departments', ProductController.getAllDepartments);
