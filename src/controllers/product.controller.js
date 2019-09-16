@@ -160,7 +160,7 @@ class ProductController {
   static async getProductsByCategory(req, res, next) {
     try {
       const { category_id } = req.params; // eslint-disable-line
-      const { description_length: descriptionLength, page, limit } = req.query;
+      const { description_length: descriptionLength = 200, page = 1, limit = 20 } = req.query;
 
       // eslint-disable-next-line no-restricted-globals
       if (isNaN(page) || isNaN(limit) || isNaN(descriptionLength)) {
@@ -173,7 +173,7 @@ class ProductController {
       const offset = ((page || 1) - 1) * (limit || 20);
       const queryMap = {
         limit: limit ? parseInt(limit, 10) : 20,
-        offset: parseInt(offset, 10),
+        offset,
         where: { category_id },
         include: [
           {
@@ -209,7 +209,49 @@ class ProductController {
    * @memberof ProductController
    */
   static async getProductsByDepartment(req, res, next) {
-    // implement the method to get products by department
+    try {
+      const { department_id } = req.params; // eslint-disable-line
+      const { description_length: descriptionLength = 200, page = 1, limit = 20 } = req.query;
+
+      // eslint-disable-next-line no-restricted-globals
+      if (isNaN(page) || isNaN(limit) || isNaN(descriptionLength)) {
+        return res.status(400).json({
+          err: 'Query parameters should be valid integer values',
+          status: false,
+        });
+      }
+
+      const offset = ((page || 1) - 1) * (limit || 20);
+      const queryMap = {
+        limit: limit ? parseInt(limit, 10) : 20,
+        offset,
+        attributes: [],
+        include: [
+          {
+            model: Category,
+            where: { department_id },
+            attributes: [],
+          },
+          {
+            model: Product,
+            as: 'product',
+            attributes: [
+              ...productsQueryMap.attributes,
+              // substring description at number of characters defined by `descriptionLength`
+              sequelize.literal(
+                `SUBSTRING(product.description, 1, ${descriptionLength || 200}) as description`
+              ),
+            ],
+          },
+        ],
+      };
+
+      const products = await ProductCategory.findAll(queryMap);
+      const rows = products.map(x => x.product);
+      return res.status(200).json({ rows });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   /**
