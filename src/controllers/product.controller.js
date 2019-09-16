@@ -422,15 +422,44 @@ class ProductController {
   }
 
   /**
-   * This method should get list of categories in a department
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
+   * This method should get the category of a product
+   *
+   * @static
+   * @param {object} req express request object
+   * @param {object} res express response object
+   * @param {function} next next middleware
+   * @returns {json} json object with category of a product
+   * @memberof ProductController
    */
   static async getProductCategories(req, res, next) {
-    const { department_id } = req.params;  // eslint-disable-line
-    // implement code to get categories in a department here
-    return res.status(200).json({ message: 'this works' });
+    try {
+      const queryMap = {
+        attributes: [],
+        where: {
+          product_id: req.params.product_id,
+        },
+        include: [
+          {
+            model: Category,
+            attributes: ['name', 'category_id', 'department_id'],
+          },
+        ],
+      };
+
+      const categories = await ProductCategory.findAll(queryMap);
+
+      if (categories.length > 0) {
+        return res.status(200).json(categories[0].Category);
+      }
+      return res.status(404).json({
+        error: {
+          status: 404,
+          message: `Category not found`,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
   }
 }
 
