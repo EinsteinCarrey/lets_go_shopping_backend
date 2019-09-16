@@ -34,8 +34,8 @@ class ShippingController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and shipping types data
+   * @param {function} next next middleware
+   * @returns {json} json object shipping types data
    * @memberof ShippingController
    */
   static async getShippingType(req, res, next) {
@@ -47,9 +47,7 @@ class ShippingController {
         },
       });
 
-      return res.status(200).json({
-        shippingTypes,
-      });
+      return res.status(200).json(shippingTypes);
     } catch (error) {
       return next(error);
     }
