@@ -15,16 +15,14 @@ class ShippingController {
    * @static
    * @param {object} req express request object
    * @param {object} res express response object
-   * @param {object} next next middleware
-   * @returns {json} json object with status and shipping regions data
+   * @param {function} next next middleware
+   * @returns {json} json object with a list of shipping regions
    * @memberof ShippingController
    */
   static async getShippingRegions(req, res, next) {
     try {
       const shippingRegions = await ShippingRegion.findAll();
-      return res.status(200).json({
-        shippingRegions,
-      });
+      return res.status(200).json({ shippingRegions });
     } catch (error) {
       return next(error);
     }
