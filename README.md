@@ -1,6 +1,6 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/281f722065c14e62a932aceb42471303)](https://www.codacy.com/manual/EinsteinCarrey/lets_go_shopping_backend?utm_source=github.com&utm_medium=referral&utm_content=EinsteinCarrey/lets_go_shopping_backend&utm_campaign=Badge_Grade)
 
-# Turing Back End Challenge
+# Back End Challenge
 
 To complete this challenge, you need to ensure all route returns a similar response object as described in our API guide.
 To achieve this goal
